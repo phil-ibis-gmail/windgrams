@@ -1,0 +1,108 @@
+<!DOCTYPE html >
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<title>NextSeabus</title>
+
+<style type="text/css">
+  html { height: 100% }
+  body { height: 100%; font-family: sans-serif; font-size:85%}
+  .mapDiv  {   margin-left:0px; height:100% }
+</style>
+
+<body onload="initialize();">
+<div><span id="waterfront_timer">XX::YY</span> waterfront at <span id="waterfront_takeoff">blablabla</span></div>
+<div><span id="lonsdale_timer">XX::YY</span> lonsdale at <span id="lonsdale_takeoff">blablabla</span></div>
+
+</body>
+
+<script language="javascript">
+    function isHoliday() { return false; }
+    function calc_takeoff2(currentTime,times,offset) {
+        var minutes = currentTime.getMinutes();
+
+        for (var i = 0; i < times.length; i++) {
+            times[i].date = new Date(currentTime); times[i].date.setHours(times[i].h, times[i].m, 0, 0);
+        }
+
+        if (currentTime < times[0].date)
+            return times[0].date;
+        for (var i = 1; i < times.length; i++) {
+            if (currentTime > times[i - 1].date && currentTime <= times[i].date) {
+                if (times[i - 1].interval != 0) {
+                    var x = times[i - 1].interval - (((minutes + 60) - offset) % times[i - 1].interval);
+                    var t2 = new Date();
+                    t2.setTime(currentTime.getTime() + x * 60000);
+                    t2.setSeconds(0, 0);
+                    return t2;
+                }
+                else {
+                    return times[i].date;
+                }
+            }
+        }
+    }
+
+    function countdown(currentTime, takeoff, schedule,timer_id, takeoff_id) {
+        var milliseconds_to_launch = takeoff.getTime() - currentTime.getTime();
+        var minutes_to_launch = Math.floor((milliseconds_to_launch / 1000) / 60);
+        var seconds_to_launch = 1 + Math.floor((milliseconds_to_launch / 1000) % 60);
+        if (seconds_to_launch == 60) { minutes_to_launch++; seconds_to_launch = 0; }
+        var extra = (seconds_to_launch < 10) ? "0" : "";
+
+        document.getElementById(timer_id).innerHTML = (minutes_to_launch + ":" + extra + seconds_to_launch).fontsize(10).bold();
+        document.getElementById(takeoff_id).innerHTML = takeoff.toLocaleTimeString() + "///" + schedule;
+       }
+
+    function tick()
+    {
+        var currentTime = new Date();
+
+/*        currentTime = new Date();
+        currentTime.setMinutes(50);
+        currentTime.setHours(17);
+        currentTime.setDate(1);
+  */      
+        var minutes = currentTime.getMinutes();
+        var hour = currentTime.getHours();
+        var date = currentTime.getDay();
+
+        
+        var schedule_day = "twtf";
+        if (date == 1)
+            schedule = "monday";
+        if (date == 6)
+           schedule_day = "saturday";
+        if(date == 0)
+            schedule_day = "sunday/holiday";
+
+        // (schedule is not right for a monday holiday, because there is no morning bleed over)
+        var schedule_waterfront = {
+            "monday": [{ h: 6, m: 16, interval: 15 }, { h: 18, m: 46, interval: 30 }, { h: 23, m: 46, interval: 30 }, { h: 24, m: 16, interval: 0}],
+            "twtf": [{ h: 0, m: 16, interval: 30 }, { h: 0, m: 46, interval: 0 }, { h: 1, m: 22, interval: 0 }, { h: 6, m: 16, interval: 15 }, { h: 18, m: 46, interval: 30 }, { h: 23, m: 46, interval: 0 }, { h: 24, m: 16, interval: 0}],
+            "saturday": [{ h: 0, m: 16, interval: 30 }, { h: 0, m: 46, interval: 0 }, { h: 1, m: 22, interval: 0 }, { h: 6, m: 16, interval: 30 }, { h: 10, m: 16, interval: 15 }, {h: 18, m: 46, interval: 30}, { h: 23, m: 46, interval: 0 }, { h: 24, m: 16, interval: 0}],
+            "sunday/holiday": [{ h: 0, m: 16, interval: 30 }, { h: 0, m: 46, interval: 0 }, { h: 1, m: 22, interval: 0 }, { h: 8, m: 16, interval: 30 }, { h: 23, m: 16, interval: 0}]
+        };
+
+        var schedule_lonsdale = {
+            "monday": [{ h: 6, m: 2, interval: 15 }, { h: 18, m: 32, interval: 30 }, { h: 23, m: 32, interval: 30 }, { h: 24, m: 2, interval: 0}],
+            "twtf": [{ h: 0, m: 2, interval: 30 }, { h: 0, m: 32, interval: 0 }, { h: 1, m: 0, interval: 0 }, { h: 6, m: 2, interval: 15 }, { h: 18, m: 32, interval: 30 }, { h: 23, m: 32, interval: 0 }, { h: 24, m: 2, interval: 0}],
+            "saturday": [{ h: 0, m: 2, interval: 30 }, { h: 0, m: 32, interval: 0 }, { h: 1, m: 0, interval: 0 }, { h: 6, m: 2, interval: 30 }, { h: 10, m: 2, interval: 15 }, { h: 18, m: 32, interval: 30 },{ h: 23, m: 32, interval: 0 }, { h: 24, m: 2, interval: 0}],
+            "sunday/holiday": [{ h: 0, m: 2, interval: 30 }, { h: 0, m: 32, interval: 0 }, { h: 1, m: 0, interval: 0 }, { h: 8, m: 2, interval: 30 }, { h: 23, m: 2, interval: 0}]
+        };
+
+
+        var takeoff_waterfront = calc_takeoff2(currentTime,schedule_waterfront[schedule_day],16);
+        countdown(currentTime, takeoff_waterfront, schedule_day, "waterfront_timer", "waterfront_takeoff");
+
+        var takeoff_lonsdale = calc_takeoff2(currentTime, schedule_lonsdale[schedule_day],2);
+        countdown(currentTime, takeoff_lonsdale, schedule_day, "lonsdale_timer", "lonsdale_takeoff");
+
+        self.setTimeout("tick();", 1000);
+    }
+
+    function initialize()
+    {
+        tick();
+    }
+</script>

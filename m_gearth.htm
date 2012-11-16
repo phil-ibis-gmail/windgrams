@@ -1,0 +1,442 @@
+<!DOCTYPE html >
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<title>TheWind</title>
+<!-- better to put style information inside a single file
+it is better to make gradients with css, than with a picture stretched
+css3 has border radius things to make rounded corners
+-->
+
+<style type="text/css">
+  html { height: 100% }
+  body { height: 100%; font-family: sans-serif; font-size:100%}
+  #map_canvas { height: 100% }
+  
+  table
+  {
+    width:20%;
+  }
+  
+  th
+  {
+    height:150px;
+  }
+  
+  td
+  {
+    text-align:left;
+    vertical-align:center;
+  }
+  
+.mapDiv
+{
+    margin-left:0px;
+}
+
+
+
+
+  
+  
+</style>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-27362040-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+</head>
+<body onload="initialize();" onunload="setCookie();">
+
+
+
+<script type="text/javascript"
+    src="http://maps.googleapis.com/maps/api/js?sensor=false">
+</script>
+
+<script type="text/javascript" src="javascript/windgram.js"></script> 
+
+
+<?php 
+    function outputInfoHTML($placename,$lat,$lng,$launch_elevation,$base_elevation,$forecast)
+    {
+echo<<<EOT
+   <div id="$placename-text" style="visibility:hidden;width:0px;height:0px;">
+
+            <!-- bah! the canvas id in here isn't unique, so global searches for something named 'mini' turn up the global instance as part of this div, when 
+            in fact, what I want is the one attached to the info window. thus $placename-mini-hidden -->
+            <div style="width:200px;height:100px;margin:0px 10px">
+                <canvas id="$placename-mini-hidden" width="200" height="100" style="float:left;text-align:center" onclick="open_windgram('$placename',$lat,$lng,$launch_elevation,$base_elevation);"></canvas>
+            </div>
+    </div>
+EOT;
+    }
+
+
+    include("PlaceDatabase.php");
+
+
+
+    
+    $num_places = count($places);
+    echo "<script type=\"text/javascript\">";
+    echo "function PlaceInfo() {}";
+    echo "PlaceInfo.prototype.marker;\n";
+    echo "PlaceInfo.prototype.baseElevation;\n";
+    echo "PlaceInfo.prototype.launchElevation;\n";
+    echo "PlaceInfo.prototype.position;\n";
+    echo "PlaceInfo.prototype.weather;\n";
+    echo "var places_list = new Array($num_places);\n";
+    echo "function buildPlacesList() {\n";
+    foreach($places as $place)
+    {
+        $placename = $place["placename"];
+        $lat = $place["lat"];
+        $lng = $place["lng"];
+        $base_elevation = $place["base_elevation"];
+        $launch_elevation = $place["elevation"];
+        $weather = $place["forecast"];
+        echo "var info = new PlaceInfo();\n";
+        echo "info.position = new google.maps.LatLng($lat,$lng);\n";
+        echo "info.marker = new google.maps.Marker({position:info.position,map:map});\n";
+        echo "info.baseElevation = $base_elevation;\n";
+        echo "info.launchElevation = $launch_elevation;\n";
+        echo "info.weather = '$weather';\n";
+        echo "google.maps.event.addListener(info.marker,'click', function(event) {map.setCenter(info.position);showKnownPlace('$placename');});\n";
+        echo "info.marker.setTitle('$placename');\n";
+        echo "places_list['$placename'] = info;\n";
+    }
+    echo "}";
+    echo "</script>";
+
+    echo "<select id=\"places_select\" onchange=\"newKnownPlaceSelected(this.value);\" style=\"display:inline\">";
+    foreach($places as $place)
+    {
+        $placename = $place["placename"];
+        $base_elevation = $place["base_elevation"];
+        echo "<option>$placename</option>";
+    }
+    echo "</select>";
+
+
+    echo "<div style=\"font-size:0.600em;\">";
+    echo "<div id=\"location_header\" style=\"float:left; position:absolute; top:10px; left:210px\">location</div>";
+    echo "<div id=\"windgram_header\" style=\"float:left; position:absolute; top:10px; left:110px\"><a href=\"hello\">windgram</a></div>";
+    echo "<div id=\"forecast_header\" style=\"float:left; position:absolute; top:10px; left:160px\"><a href=\"wedder\">forecast</a></div>";
+    echo "</div>";
+    
+    echo "<div id=\"map_canvas\" class=\"mapDiv\"></div>";
+    
+    foreach($places as $place)
+    {
+    outputInfoHTML(
+        $place["placename"],
+        $place["lat"],
+        $place["lng"],
+        $place["elevation"],
+        $place["base_elevation"],
+        $place["forecast"]);
+    }
+
+?>
+
+
+ <!-- 
+
+should we have an "export the placenames as kml" option
+should launch sites come from a database that people can edit
+should we define other things like no-land zones? -- make it a full on database of flying information for the fraser valley?
+it would be cool if one could take all the flight paths in existence, and then use that to find the "nearest flight paths" to a launch.
+
+make a graph that shows the difference between forecast and what VE7RVA is outputting. 
+-->
+
+
+<!-- it is better to not use inline javascript. faster if it is all inside a file
+at the end of all the html, because everything else that the javascript will reference
+against is already downloaded, etc.-->
+
+<!-- since javascript is downloaded, using long variable names and all that crap makes for
+a longer download. -->
+
+<!-- instead of triggering javascript using hte load event, use the DOMContentLoaded event
+this can trigger much earlier, because there is no wait for everything else to load -->
+
+<!-- JSON is generally faster than XML. Use Native browser JSON methods. -->
+<!-- innerHTML is faster than constructing nodes -->
+<!-- setTimeout and setInterval, and lookout for runaway timers -- ones you've forgotten -->
+
+<script type="text/javascript">
+
+var elevator;
+var map;
+var infowindow = new google.maps.InfoWindow();
+
+var cookiename = "phil_windgram_cookie";  // what stuff is stored as.
+
+function QueryPlacesCallback()
+{
+    if(this.readyState == 4)
+    {
+        var xmldoc = this.responseXML;
+        if(xmldoc != null && this.status == 200)
+        {
+            console.log("QueryPlacesCallback::success");
+        }
+        
+        if(xmldoc == null)
+        {
+            console.log("doc is null\n");
+        }
+        
+        if(this.status != 200)
+        {
+            console.log("status is "+this.status);
+        }
+    }
+    
+}
+
+var path_riverside_lz = [
+    new google.maps.LatLng(49.2282,-121.8991),
+    new google.maps.LatLng(49.2283,-121.8942),
+    new google.maps.LatLng(49.2269,-121.8941),
+    new google.maps.LatLng(49.2269,-121.8988),
+];
+
+var path_ranch_lz = [
+    new google.maps.LatLng(49.2361,-121.9252),
+    new google.maps.LatLng(49.2347,-121.9228),
+    new google.maps.LatLng(49.2324,-121.9267),
+    new google.maps.LatLng(49.2331,-121.9302),
+];
+
+var path_billbest_lz = [
+    new google.maps.LatLng(49.2446,-121.9395),
+    new google.maps.LatLng(49.2439,-121.9348),
+    new google.maps.LatLng(49.2426,-121.9348),
+    new google.maps.LatLng(49.2420,-121.9355),
+    new google.maps.LatLng(49.2420,-121.9372),
+    new google.maps.LatLng(49.2434,-121.9394),
+];
+
+var path_harvest_lz = [
+    new google.maps.LatLng(49.2438,-121.8234),
+    new google.maps.LatLng(49.2441,-121.8180),
+    new google.maps.LatLng(49.2428,-121.8180),
+    new google.maps.LatLng(49.2420,-121.8214),
+    new google.maps.LatLng(49.2419,-121.8235),
+    new google.maps.LatLng(49.2438,-121.8234),
+];
+
+var path_bridal_lz = [
+    new google.maps.LatLng(49.1832,-121.7533),
+    new google.maps.LatLng(49.1824,-121.7532),
+    new google.maps.LatLng(49.1823,-121.7550),
+    new google.maps.LatLng(49.1831,-121.7546),
+];
+
+function draw_lz(lz_poly_path)
+{
+    var poly_lz = new google.maps.Polygon({
+        paths: lz_poly_path,
+      strokeColor: "#00FF00",
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: "#00FF00",
+      fillOpacity: 0.35});
+    poly_lz.setMap(map);
+}
+
+function initialize()
+{
+    // default is to go look at woodside.
+    var lat = 49.2436;
+    var lng = -121.8874;
+    var zoom = 13;
+    var maptype = google.maps.MapTypeId.HYBRID;
+    
+    // check for a cookie, it will have the last lat,lng,zoom we used.
+    if (document.cookie.length>0)
+    {
+        cookieStart = document.cookie.indexOf(cookiename + "=");
+        if (cookieStart!=-1)
+        {
+          cookieStart += cookiename.length+1; 
+          cookieEnd=document.cookie.indexOf(";",cookieStart);
+          if (cookieEnd==-1)
+          {
+            cookieEnd=document.cookie.length;
+          }
+          cookietext = document.cookie.substring(cookieStart,cookieEnd);
+          var bits = cookietext.split("|");
+          lat = parseFloat(bits[0]);
+          lng = parseFloat(bits[1]);
+          zoom = parseInt(bits[2]);
+          if(bits.length > 3)
+            maptype=bits[3];
+        }
+     }
+
+    var latlng = new google.maps.LatLng(lat,lng);
+    var myOptions = {
+      zoom: zoom,
+      center: latlng,
+      mapTypeId: maptype,
+      streetViewControl:false
+    };
+    
+    elevator = new google.maps.ElevationService();
+    
+    map = new google.maps.Map(document.getElementById("map_canvas"),myOptions);
+        
+    google.maps.event.addListener(map, 'click', function(event) {placeMarker(event.latLng,map,""); });    
+
+    var xmlhttp = new XMLHttpRequest;
+    xmlhttp.overrideMimeType('text/xml');
+    xmlhttp.open("GET","QueryPlaces.php",true);
+    xmlhttp.send(null);
+    xmlhttp.onreadystatechange = QueryPlacesCallback;
+
+    buildPlacesList();
+    
+    newKnownPlaceSelected(document.getElementById("places_select").value);
+
+    draw_lz(path_riverside_lz);
+    draw_lz(path_ranch_lz);
+    draw_lz(path_billbest_lz);
+    draw_lz(path_harvest_lz);
+    draw_lz(path_bridal_lz);
+}
+
+function setCookie() {
+        var cookietext = cookiename+"="+map.getCenter().lat()+"|"+map.getCenter().lng()+"|"+map.getZoom()+"|"+map.mapTypeId;
+//        if (expiredays) {
+//          var exdate=new Date();
+//          exdate.setDate(exdate.getDate()+expiredays);
+//          cookietext += ";expires="+exdate.toGMTString();
+//        }
+        document.cookie=cookietext;
+      }
+
+function syncKnownPlaceHeader(placename)
+{
+    var lat = places_list[placename].position.lat().toFixed(4);
+    var lng = places_list[placename].position.lng().toFixed(4);
+    document.getElementById("location_header").innerHTML=places_list[placename].launchElevation +"m "+ lat+","+lng;
+    var windgram_url = "windgram.php?lon="+lng+"&lat="+lat+"&elevation="+places_list[placename].launchElevation.toFixed()+"&placename="+placename+"&base_elevation="+places_list[placename].baseElevation;
+    document.getElementById("windgram_header").innerHTML="<a href=\""+windgram_url+"\">windgram</a>";
+    document.getElementById("forecast_header").innerHTML="<a href=\""+places_list[placename].weather+"\">forecast</a>";
+}
+
+function newKnownPlaceSelected(placename)
+{
+    syncKnownPlaceHeader(placename);
+    map.setCenter(places_list[placename].position);
+}
+
+function showKnownPlace(placename)
+{
+    var spot = places_list[placename];
+   
+    google.maps.event.addListener(infowindow,'domready', function() {mini_windgram(placename,spot.position.lat(),spot.position.lng(),spot.launchElevation,spot.baseElevation);});
+    
+    // have to find the canvas that is inside the html I passed in and change its attribuzte name because otherwise
+    // I'll create two canvas with the same id name which leads to it not drawing.
+    var tempdiv = document.createElement('div');
+    var placename_text = document.getElementById(placename+"-text");
+    tempdiv.innerHTML = placename_text.innerHTML;
+    var canvas_list = tempdiv.getElementsByTagName('canvas');
+    var canvas = canvas_list.item(0);
+    canvas.setAttribute("id","mini");
+    
+    infowindow.close();
+    infowindow.setPosition(spot.position);
+    infowindow.setContent(tempdiv.innerHTML);
+    infowindow.open(map);
+    
+    syncKnownPlaceHeader(placename);
+    map.setCenter(places_list[placename].position);
+}
+
+
+function placeMarker(location,map,placename) {
+  var marker = new google.maps.Marker({
+      position: location, 
+      map: map
+  });
+
+  google.maps.event.addListener(marker,'click', function(event) {
+    map.setCenter(marker.position);
+    showInfoWindow(event.latLng,placename);
+    })
+    
+    return marker;
+}
+
+function open_windgram(placename,lat,lng,elevation,base_elevation)
+{
+    var windgram_url = "windgram.php?lon="+lng.toFixed(4)+"&lat="+lat.toFixed(4)+"&elevation="+elevation.toFixed()+"&placename="+placename+"&base_elevation="+base_elevation;
+    window.location = windgram_url;
+}
+
+function showInfoWindow(latlng,placename)
+{
+ 
+  // Retrieve the clicked location and push it on the array
+  var locations = [];
+  var clickedLocation = latlng;
+  locations.push(clickedLocation);
+  
+  // Create a LocationElevationRequest object using the array's one value
+  var positionalRequest = {
+    'locations': locations
+  }
+
+  // Initiate the location request
+  elevator.getElevationForLocations(positionalRequest, function(results, status) {
+    if (status == google.maps.ElevationStatus.OK) {
+
+      // Retrieve the first results
+      if (results[0]) {
+
+        // Open an info window indicating the elevation at the clicked position
+        var lng = latlng.lng();
+        var lat = latlng.lat();
+        var elevation = results[0].elevation;
+        var pos=lat.toFixed(4)+","+lng.toFixed(4);
+        var op40url = "<a href=http://www-frd.fsl.noaa.gov/mab/soundings/reply-skewt.cgi?data_source=Op40&lon="+lng+"&lat="+lat+"&airport=%28none%29&add_hours=0>op40</a>";
+        var windgram = "<a href=windgram.php?lon="+lng.toFixed(4)+"&lat="+lat.toFixed(4)+"&elevation="+elevation.toFixed()+"&placename="+placename+">windgram</a>";
+        var title="<br><b>"+placename+"</b></br>";
+        //var click="onclick=\"draw_windgram('mini',"+placename+","+lat.toFixed(4)+","+lng.toFixed(4)+","+elevation.toFixed()+",'tiny');\"";
+        var click="onclick=\"open_windgram('"+placename+"',"+lat.toFixed(4)+","+lng.toFixed(4)+","+elevation.toFixed()+"0,);\""; // 0 for base elevation
+        var canvas="<div style=\"width:150px float:left;\"><canvas id=\"mini\" width=\"100\" height=\"100\" style=\"float:right;\" "+click+"></canvas></div>";
+        var elevation="elevation: " + elevation.toFixed() + " meters.</br>";
+        google.maps.event.addListener(infowindow,'domready', function() {draw_windgram('mini',placename,lat,lng,elevation,'tiny');});
+        
+        infowindow.setContent("<div class=\"infobox\" style=\"width:150px;\">"+title+windgram+"<br/>"+elevation+pos+"</br>"+op40url+"</div>"+canvas);
+        infowindow.setPosition(clickedLocation);
+        infowindow.open(map);
+      } else {
+        alert("no results in elevation service");
+      }
+    } else {
+      alert("Elevation service failed due to: " + status);
+    }
+  });
+}
+
+
+</script>
+</body>
+</html>
