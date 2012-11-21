@@ -302,11 +302,11 @@ function initialize()
         
     google.maps.event.addListener(map, 'click', function(event) {placeMarker(event.latLng,map,""); });    
 
-    var xmlhttp = new XMLHttpRequest;
-    xmlhttp.overrideMimeType('text/xml');
-    xmlhttp.open("GET","QueryPlaces.php",true);
-    xmlhttp.send(null);
-    xmlhttp.onreadystatechange = QueryPlacesCallback;
+    //var xmlhttp = new XMLHttpRequest;
+    //xmlhttp.overrideMimeType('text/xml');
+    //xmlhttp.open("GET","QueryPlaces.php",true);
+    //xmlhttp.send(null);
+    //xmlhttp.onreadystatechange = QueryPlacesCallback;
 
     buildPlacesList();
     
