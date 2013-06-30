@@ -489,7 +489,7 @@ function windgram_redraw(windgram_context,windgram_canvas)
     
     if(windgramCanvasType == "large")
     {
-        for(var temp=-10.0;temp<=20.0;temp+=5.0)
+        for(var temp=-10.0;temp<=40.0;temp+=5.0)
         {
             if(this.isTemperatureAttained(temp))
             {
