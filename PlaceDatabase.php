@@ -6,13 +6,16 @@
     $places["Woodside"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-70_metric_e.html";
     $places["Woodside"]["placename"] = "Woodside";
     $places["Woodside"]["base_elevation"] = 0;
-    
+    $places["Woodside"]["airport_station"] = "cyxx";
+
+
     $places["Bridal"]["lat"] = 49.1712;
     $places["Bridal"]["lng"] = -121.7488;
     $places["Bridal"]["elevation"] = 733;
     $places["Bridal"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-70_metric_e.html";
     $places["Bridal"]["placename"] = "Bridal";
     $places["Bridal"]["base_elevation"] = 0;
+    $places["Bridal"]["airport_station"]="cyxx";
 
     $places["Cheam"]["lat"] = 49.1844;
     $places["Cheam"]["lng"] = -121.6865;
@@ -20,6 +23,8 @@
     $places["Cheam"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-70_metric_e.html";
     $places["Cheam"]["placename"] = "Cheam";
     $places["Cheam"]["base_elevation"] = 0;
+    $places["Cheam"]["airport_station"]="cyhe";
+
 
     $places["Seymour"]["lat"] = 49.3870;
     $places["Seymour"]["lng"] = -122.9420;
@@ -27,6 +32,7 @@
     $places["Seymour"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-74_metric_e.html";
     $places["Seymour"]["placename"] = "Seymour";
     $places["Seymour"]["base_elevation"] = 0;
+    $places["Seymour"]["airport_station"]="cyvr";
 
     //$places["Sumas"]["lat"] = 49.120051;
     //$places["Sumas"]["lng"] = -122.126765;
@@ -34,6 +40,8 @@
     //$places["Sumas"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-81_metric_e.html";
     //$places["Sumas"]["placename"] = "Sumas";
     //$places["Sumas"]["base_elevation"] = 0;
+    //$places["Sumas"]["airport_station"]="cyxx";
+
 
     $places["Pemberton"]["lat"] = 50.3523;
     $places["Pemberton"]["lng"] = -122.7987;
@@ -41,6 +49,8 @@
     $places["Pemberton"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-16_metric_e.html";
     $places["Pemberton"]["placename"] = "Pemberton";
     $places["Pemberton"]["base_elevation"] = 500;
+    //$places["Pemberton"]["airport_station"]="cyps";
+
     
 //    $places["pemberton-upper"]["lat"] = 50.3656;
 //    $places["pemberton-upper"]["lng"] = -122.7864;
@@ -54,6 +64,8 @@
     $places["Whistler"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-86_metric_e.html";
     $places["Whistler"]["placename"] = "Whistler";
     $places["Whistler"]["base_elevation"] = 1000;
+    $places["Whistler"]["airport_station"]="cyws";
+
 
     $places["Revelstoke"]["lat"] = 50.9610;
     $places["Revelstoke"]["lng"] = -118.0969;
@@ -61,6 +73,8 @@
     $places["Revelstoke"]["forecast"] = "http://weather.gc.ca/city/pages/bc-65_metric_e.html";
     $places["Revelstoke"]["placename"] = "Revelstoke";
     $places["Revelstoke"]["base_elevation"] = 1100;
+    $places["Revelstoke"]["airport_station"]="cyrv";
+
 
     $places["Golden"]["lat"] = 51.2755;
     $places["Golden"]["lng"] = -116.8857;
@@ -68,6 +82,7 @@
     $places["Golden"]["forecast"] = "http://weather.gc.ca/city/pages/bc-34_metric_e.html";
     $places["Golden"]["placename"] = "Golden";
     $places["Golden"]["base_elevation"] = 1200;
+    $places["Golden"]["airport_station"]="cyge";
 
 
 
@@ -77,6 +92,8 @@
     $places["Blanshard"]["forecast"] = "http://forecast.weather.gov/MapClick.php?lat=48.608397925562606&lon=-122.42271423339844&site=otx&unit=0&lg=en&FcstType=text";
     $places["Blanshard"]["placename"] = "Blanshard";
     $places["Blanshard"]["base_elevation"] = 0;
+    $places["Blanshard"]["airport_station"]="kbli";
+
 
     $places["Chelan"]["lat"] = 47.8071;
     $places["Chelan"]["lng"] = -120.0344;
@@ -84,6 +101,8 @@
     $places["Chelan"]["forecast"] = "http://forecast.weather.gov/MapClick.php?lat=47.79562911029222&lon=-120.03387451171875&site=sew&unit=0&lg=en&FcstType=text";
     $places["Chelan"]["placename"] = "Chelan";
     $places["Chelan"]["base_elevation"] = 0;
+    $places["Chelan"]["airport_station"]="keat";
+
 
 //    $places["Merritt"]["lat"] = 50.1139;
 //    $places["Merritt"]["lng"] = -120.6746;
@@ -98,7 +117,8 @@
     $places["Savona"]["forecast"] = "http://weatheroffice.gc.ca/city/pages/bc-45_metric_e.html";
     $places["Savona"]["placename"] = "Savona";
     $places["Savona"]["base_elevation"] = 1000;
-    
+    $places["Savona"]["airport_station"]="kyka";
+
 //    $places["Hedley"]["lat"] = 49.3508;
 //    $places["Hedley"]["lng"] = -120.0364;
 //    $places["Hedley"]["elevation"] = 1397;
@@ -114,7 +134,8 @@
     $places["Tiger"]["forecast"] = "http://forecast.weather.gov/MapClick.php?lat=47.49696618465988&lon=-122.00995445251465&site=sew&unit=0&lg=en&FcstType=text";
     $places["Tiger"]["placename"] = "Tiger";
     $places["Tiger"]["base_elevation"] = 0;
-    
+    $places["Tiger"]["airport_station"]="ksea";
+
 
     $places["Whidbey"]["lat"] = 48.2165;
     $places["Whidbey"]["lng"] = -122.7628;
@@ -122,7 +143,8 @@
     $places["Whidbey"]["forecast"] = "http://forecast.weather.gov/MapClick.php?lat=48.2165&lon=-122.7628&site=sew&unit=0&lg=en&FcstType=text";
     $places["Whidbey"]["placename"] = "Whidbey";
     $places["Whidbey"]["base_elevation"] = -150;
-    
+    $places["Whidbey"]["airport_station"]="knuw";
+
     
 //    $places["king eddy"]["lat"] = 50.2111;
 //    $places["king eddy"]["lng"] = -119.1627;
@@ -142,6 +164,8 @@
     $places["Tapalpa"]["forecast"] = "http://smn.cna.gob.mx/wxmap/pruebaWSI.html?icast_page=/Local/Weather&icast_location=MXXX7775";
     $places["Tapalpa"]["placename"] = "Tapalpa";
     $places["Tapalpa"]["base_elevation"] = 1500;
+    $places["Tapalpa"]["airport_station"]="mmgl";
+
 
     $places["San Marcos"]["lat"] = 20.3516;
     $places["San Marcos"]["lng"] = -103.5412;
@@ -149,6 +173,8 @@
     $places["San Marcos"]["forecast"] = "http://smn.cna.gob.mx/wxmap/pruebaWSI.html?icast_page=/Local/Weather&icast_location=MXXX9069";
     $places["San Marcos"]["placename"] = "San Marcos";
     $places["San Marcos"]["base_elevation"] = 1250;
+    $places["San Marcos"]["airport_station"]="mmgl";
+
 
 //    $places["Valle Bravo"]["lat"] = 19.061959;
 //    $places["Valle Bravo"]["lng"] = -100.091491;

@@ -74,9 +74,31 @@ if($placename != null)
 {
     $forecast=$places[$placename]["forecast"];
     echo "<a href=\"$forecast\">forecast</a>";
+
+    // if there is an associated weather station, show its metar
+    if(array_key_exists("airport_station",$places[$placename]))
+    {
+        $station=$places[$placename]["airport_station"];
+        $url="http://aviationweather.gov/adds/metars/?station_ids=$station&std_trans=standard&chk_metars=on&hoursStr=past+4+hours&submitmet=Submit";
+    	$metar = file_get_contents("$url");
+    	$lines = explode("\n",$metar);
+    	$length = count($lines);
+    	for($i=0;$i<$length;$i++)
+    	{	
+        	$line=$lines[$i];
+		if(preg_match("/.*$station.*/i",$line))
+		{
+	  		echo "<br/>$line";
+		}
+    	}
+    }
+
+    //$hmm=file_get_contents($forecast);
+    //echo $hmm;
+
+
 }
 ?>
-
 
 <script type="text/javascript">
 
