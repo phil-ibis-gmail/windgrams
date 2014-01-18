@@ -88,6 +88,7 @@ if($placename != null)
         	$line=$lines[$i];
 		if(preg_match("/.*$station.*/i",$line))
 		{
+			$line=preg_replace("/<br>/i","",$line);
 	  		echo "<br/>$line";
 		}
     	}
